@@ -52,6 +52,7 @@ SM_TAGS=$(awk -v low=$START -v high=$STOP '$1 >= low && $1 <= high {print $5}' c
 # on the command line and then run through the lines within the for loop.
 for((Idx=$START; Idx<=$STOP; Idx++)); do
 
+  
   echo "Starting work on file index $Idx at $(date)"
   
   
@@ -106,25 +107,26 @@ done
 mkdir -p mkdup
 
 # cycle over the samples that were processed and merge them across lanes
-for SM in $SM_TAGS; do 
-  # get the names of the lane-specific sorted BAMS for each sample
-  INPUT_BAMS=$(awk -F"\t" -v sm=$SM '$1 == sm {print $2}' chinook-all-prefixes-for-samples.tsv |
-                 awk '{for(i=1;i<=NF;i++) printf("bam/%s_SORTED.bam  ", $i)}')
-  
-  # some output file names              
-  MERGED_OUTPUT=mkdup/${SM}_MERGED.bam
-  MKDUP_OUTPUT=mkdup/${SM}_mkdup.bam
-  
-  # some error file names
-  SAM_MERGE_STDERR=stderr/samtools_merge_stderr_$SM
-  SAM_MARK_STDERR=stderr/samtools_markdup_stderr_$SM
-  SAM_INDEX_STDERR=stderr/samtools_index_stderr_$SM
-  
-  # then we merge them and mark duplicates
-  samtools merge $MERGED_OUTPUT $INPUT_BAMS  2> $SAM_MERGE_STDERR &&
-  samtools markdup $MERGED_OUTPUT $MKDUP_OUTPUT  2> $SAM_MARK_STDERR &&
-  samtools index $MKDUP_OUTPUT 2> $SAM_INDEX_STDERR &&
-  rm -f $MERGED_OUTPUT
-  
-done
 
+# cycle over the samples that were processed and merge them across lanes
+for SM in $SM_TAGS; do
+ # get the names of the lane-specific sorted BAMS for each sample
+ INPUT_BAMS=$(awk -F"\t" -v sm=$SM '$1 == sm {print $2}' chinook-all-prefixes-for-samples.tsv |
+                awk '{for(i=1;i<=NF;i++) printf("bam/%s_SORTED.bam  ", $i)}')
+ 
+ # some output file names              
+ MERGED_OUTPUT=mkdup/${SM}_MERGED.bam
+ MKDUP_OUTPUT=mkdup/${SM}_mkdup.bam
+ 
+ # some error file names
+ SAM_MERGE_STDERR=stderr/samtools_merge_stderr_$SM
+ SAM_MARK_STDERR=stderr/samtools_markdup_stderr_$SM
+ SAM_INDEX_STDERR=stderr/samtools_index_stderr_$SM
+ 
+ # then we merge them and mark duplicates
+ samtools merge $MERGED_OUTPUT $INPUT_BAMS  2> $SAM_MERGE_STDERR &&
+ samtools markdup $MERGED_OUTPUT $MKDUP_OUTPUT  2> $SAM_MARK_STDERR &&
+ samtools index $MKDUP_OUTPUT 2> $SAM_INDEX_STDERR &&
+ rm -f $MERGED_OUTPUT
+ 
+done
